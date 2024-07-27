@@ -28,3 +28,18 @@ st.title('🤖 DataFrame Chatbot -Ollama')
 # Initialize chat history in streamlit session
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
+
+
+# Initiate dataframe in session state
+if "df" not in st.session_state:
+    st.session_state.df = None
+
+
+# file uploaded widget
+
+file_uploaded = st.file_uploader("Choose a file:", type=["csv", "xlsx", "xls"])
+
+if file_uploaded:
+    st.session_state.df = read_data(file_uploaded)
+    st.write('DataFrame Preview')
+    st.dataframe(st.session_state.df.head())
