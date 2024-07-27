@@ -15,7 +15,7 @@ st.set_page_config(
 
 # function for read the two different file
 def read_data(file):
-    if file.name.endwith('.csv'):
+    if file.name.endswith('.csv'):
         return pd.read_csv(file)
     
     else:
