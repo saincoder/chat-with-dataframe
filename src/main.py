@@ -43,3 +43,14 @@ if file_uploaded:
     st.session_state.df = read_data(file_uploaded)
     st.write('DataFrame Preview')
     st.dataframe(st.session_state.df.head())
+
+
+# display chat history
+for message in st.session_state.chat_history:
+    with st.chat_message(message['role']):
+        st.markdown(message['content'])
+
+
+# Input field for user prompt
+user_prmpt = st.chat_input('Enter your prompt here')
+
