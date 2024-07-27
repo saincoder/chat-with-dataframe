@@ -52,5 +52,21 @@ for message in st.session_state.chat_history:
 
 
 # Input field for user prompt
-user_prmpt = st.chat_input('Enter your prompt here')
+user_prompt = st.chat_input('Enter your prompt here')
 
+# Add user prompts to chat history
+
+if user_prompt:
+    st.chat_message('user').markdown(user_prompt)
+    st.session_state.chat_history.append({"role" : "user","content" : user_prompt})
+
+
+# load the LLM
+llm = ChatOllama(model='gemma:2b', temperature=0)
+pandas_df_agent = create_pandas_dataframe_agent(
+    llm,
+    st.session_state.df,
+    verbose=2,
+    agent_type=AgentType.OPENAI_FUNCTIONS,
+    allow_dangerous_code=True
+)
