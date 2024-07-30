@@ -4,69 +4,80 @@ from langchain.agents import AgentType
 from langchain_experimental.agents import create_pandas_dataframe_agent
 from langchain_ollama import ChatOllama
 
-
-# streamlit web app configuration
-
+# Streamlit web app configuration
 st.set_page_config(
-    page_icon="💭",
-    page_title="DF chatbot",
-    layout='centered'
+    page_title="DataFrame Chat",
+    page_icon="💬",
+    layout="centered"
 )
 
-# function for read the two different file
+# Developer Information
+
+
+
 def read_data(file):
-    if file.name.endswith('.csv'):
+    if file.name.endswith(".csv"):
         return pd.read_csv(file)
-    
     else:
-        pd.read_excel(file)
+        return pd.read_excel(file)
 
-# title
-st.title('🤖 DataFrame Chatbot -Ollama')
+# Streamlit page title
+st.title("🤖 DataFrame ChatBot - Ollama")
+st.write("Developer Shahid Hussain")
 
-
-# Initialize chat history in streamlit session
+# Initialize chat history in Streamlit session state
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-
-# Initiate dataframe in session state
+# Initialize DataFrame in session state
 if "df" not in st.session_state:
     st.session_state.df = None
 
+# File upload widget
+uploaded_file = st.file_uploader("Choose a file", type=["csv", "xlsx", "xls"])
 
-# file uploaded widget
-
-file_uploaded = st.file_uploader("Choose a file:", type=["csv", "xlsx", "xls"])
-
-if file_uploaded:
-    st.session_state.df = read_data(file_uploaded)
-    st.write('DataFrame Preview')
+if uploaded_file:
+    st.session_state.df = read_data(uploaded_file)
+    st.write("DataFrame Preview:")
     st.dataframe(st.session_state.df.head())
 
-
-# display chat history
+# Display chat history
 for message in st.session_state.chat_history:
-    with st.chat_message(message['role']):
-        st.markdown(message['content'])
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-
-# Input field for user prompt
-user_prompt = st.chat_input('Enter your prompt here')
-
-# Add user prompts to chat history
+# Input field for user's message
+user_prompt = st.chat_input("Ask LLM...")
 
 if user_prompt:
-    st.chat_message('user').markdown(user_prompt)
-    st.session_state.chat_history.append({"role" : "user","content" : user_prompt})
+    # Add user's message to chat history and display it
+    st.chat_message("user").markdown(user_prompt)
+    st.session_state.chat_history.append({"role": "user", "content": user_prompt})
 
+    # Load the LLM
+    llm = ChatOllama(model="gemma:2b", temperature=0)
 
-# load the LLM
-llm = ChatOllama(model='gemma:2b', temperature=0)
-pandas_df_agent = create_pandas_dataframe_agent(
-    llm,
-    st.session_state.df,
-    verbose=2,
-    agent_type=AgentType.OPENAI_FUNCTIONS,
-    allow_dangerous_code=True
-)
+    # Create a Pandas DataFrame agent
+    pandas_df_agent = create_pandas_dataframe_agent(
+        llm,
+        st.session_state.df,
+        verbose=True,
+        agent_type=AgentType.OPENAI_FUNCTIONS,
+        allow_dangerous_code=True
+    )
+
+    # Prepare the messages for the agent
+    messages = [
+        {"role": "system", "content": "You are a helpful assistant"},
+        *st.session_state.chat_history
+    ]
+
+    # Get the response from the agent
+    response = pandas_df_agent.invoke(messages)
+    assistant_response = response["output"]
+
+    # Add the assistant's response to chat history and display it
+    st.session_state.chat_history.append({"role": "assistant", "content": assistant_response})
+
+    with st.chat_message("assistant"):
+        st.markdown(assistant_response)
