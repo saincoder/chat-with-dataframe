@@ -47,7 +47,7 @@ for message in st.session_state.chat_history:
         st.markdown(message["content"])
 
 # Input field for user's message
-user_prompt = st.chat_input("Ask LLM...")
+user_prompt = st.chat_input("Enter your prompt.✨")
 
 if user_prompt:
     # Add user's message to chat history and display it
